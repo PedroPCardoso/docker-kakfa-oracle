@@ -19,6 +19,7 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    user: root
     environment:
       ZOOKEEPER_CLIENT_PORT: 1521
 
@@ -43,6 +44,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
+    user: root
     depends_on:
       - zookeeper
     ports:
@@ -62,6 +64,7 @@ services:
   control-center:
     image: confluentinc/cp-enterprise-control-center:6.0.1
     hostname: control-center
+    user: root
     depends_on:
       - kafka
     ports:
@@ -137,8 +140,11 @@ services:
         yum install unzip -y
         unzip instantclient-basic-linux.x64-21.1.0.0.0.zip
         unzip instantclient-sqlplus-linux.x64-21.1.0.0.0.zip
+        echo 'export LD_LIBRARY_PATH=/home/appuser/instantclient_21_1' >> ~/.bash_profile
+        echo 'export PATH=$PATH:$LD_LIBRARY_PATH' >> ~/.bash_profile
         export LD_LIBRARY_PATH=/home/appuser/instantclient_21_1
         export PATH=$PATH:$LD_LIBRARY_PATH
+        source ~/.bash_profile
         yum install nano -y
         yum install libaio -y
         yum install libstdc++.so.6 -y
@@ -177,6 +183,7 @@ services:
 
   kib01:
     image: docker.elastic.co/kibana/kibana:7.11.2
+    user: root
     container_name: kib01
     ports:
       - 5601:5601
