@@ -120,11 +120,16 @@ services:
       - -c
       - |
         echo "Installing Connector"
+        yum install  --nogpgcheck java-11-openjdk-devel -y
+        yum install  --nogpgcheck java-11-openjdk -y
+        yum install --nogpgcheck maven -y
         confluent-hub install --no-prompt debezium/debezium-connector-mysql:1.2.2
         wget https://github.com/thake/logminer-kafka-connect/releases/download/0.4.0/thake-logminer-kafka-connect-0.4.0.zip
         confluent-hub install ./thake-logminer-kafka-connect-0.4.0.zip --no-prompt
         rm ./thake-logminer-kafka-connect-0.4.0.zip
         wget https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/19.7.0.0/ojdbc8-19.7.0.0.jar -o /usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/ojdbc8-19.7.0.0.jar
+        mvn install:install-file -Dfile=/usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/ojdbc8-19.7.0.0.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=19.3 -Dpackaging=jar
+mvn install:install-file -Dfile=/usr/share/java/ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=19.3 -Dpackaging=jar
         cd /etc/yum.repos.d
         rm -f public-yum-ol7.repo
         wget https://yum.oracle.com/public-yum-ol7.repo
