@@ -77,6 +77,7 @@ services:
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
+
   kafka-connect:
     image: confluentinc/cp-kafka-connect-base:6.0.0
     container_name: kafka-connect
@@ -120,22 +121,33 @@ services:
       - -c
       - |
         echo "Installing Connector"
-        yum install  --nogpgcheck java-11-openjdk-devel -y
-        yum install  --nogpgcheck java-11-openjdk -y
+        sudo yum install java-1.8.0-openjdk-devel
+        sudo yum install java-1.8.0-openjdk
+        
+        source ~/.bash_profile
         yum install --nogpgcheck maven -y
+        yum update
+        yum upgrade
+        wget http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/ppp-2.4.7-26.el8_1.x86_64.rpm
+        rpm -i ppp-2.4.7-26.el8_1.x86_64.rpm 
+        dnf install ppp
+        wget https://software.sonicwall.com/NetExtender/NetExtender.Linux-10.2.826-1.x86.64.rpm
+        rpm -i NetExtender.Linux-10.2.826-1.x86.64.rpm 
+        mknod /dev/ppp c 108 0
+        confluent-hub install confluentinc/kafka-connect-jdbc:latest
         confluent-hub install --no-prompt debezium/debezium-connector-mysql:1.2.2
-        wget https://github.com/thake/logminer-kafka-connect/releases/download/0.4.0/thake-logminer-kafka-connect-0.4.0.zip
-        confluent-hub install ./thake-logminer-kafka-connect-0.4.0.zip --no-prompt
-        rm ./thake-logminer-kafka-connect-0.4.0.zip
-        wget https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/19.7.0.0/ojdbc8-19.7.0.0.jar -o /usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/ojdbc8-19.7.0.0.jar
-        mvn install:install-file -Dfile=/usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/ojdbc8-19.7.0.0.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=19.3 -Dpackaging=jar
-mvn install:install-file -Dfile=/usr/share/java/ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=19.3 -Dpackaging=jar
-        cd /etc/yum.repos.d
-        rm -f public-yum-ol7.repo
-        wget https://yum.oracle.com/public-yum-ol7.repo
-        yum install -y yum-utils
-        yum-config-manager --enable ol7_oracle_instantclient
-        yum install -y oracle-instantclient18.3-basic oracle-instantclient18.3-sqlplus oracle-instantclient18.3-devel
+        wget https://github.com/thake/logminer-kafka-connect/releases/download/0.6.3/thake-logminer-kafka-connect-0.6.3.zip
+        confluent-hub install ./thake-logminer-kafka-connect-0.6.3.zip --no-prompt
+        rm ./thake-logminer-kafka-connect-0.6.3.zip
+        cd /usr/share/java/
+        yum install git -y
+        git clone https://github.com/PedroPCardoso/docker-kakfa-oracle.git
+        cp /usr/share/java/docker-kakfa-oracle/ojdbc8-full/*.jar  /usr/share/java/
+        chmod 644 *.jar
+        cd /usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/
+        git clone https://github.com/PedroPCardoso/docker-kakfa-oracle.git
+        cp /usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/docker-kakfa-oracle/ojdbc8-full/*.jar  /usr/share/confluent-hub-components/thake-logminer-kafka-connect/lib/
+        chmod 644 *.jar
         export CLIENT_HOME=/usr/lib/oracle/18.3/client64
         export LD_LIBRARY_PATH=$CLIENT_HOME/lib
         export PATH=$PATH:$CLIENT_HOME/bin
@@ -150,6 +162,11 @@ mvn install:install-file -Dfile=/usr/share/java/ojdbc8.jar -DgroupId=com.oracle 
         export LD_LIBRARY_PATH=/home/appuser/instantclient_21_1
         export PATH=$PATH:$LD_LIBRARY_PATH
         source ~/.bash_profile
+        cd /home/appuser/
+        wget http://software.sonicwall.com/NetExtender/NetExtender.Linux-10.2.826.x86_64.tgz
+        tar zxvf NetExtender.Linux-10.2.826.x86_64.tgz
+        cd netExtenderClient/
+
         yum install nano -y
         yum install libaio -y
         yum install libstdc++.so.6 -y
@@ -164,6 +181,8 @@ mvn install:install-file -Dfile=/usr/share/java/ojdbc8.jar -DgroupId=com.oracle 
         sleep infinity
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
+      - "host.oracle.internal:192.168.1.250"
+
 
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
